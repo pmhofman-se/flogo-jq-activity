@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://example.com/example.json",
+    "items": {
+        "id": "/items",
+        "properties": {
+            "Name": {
+                "id": "/items/properties/Name",
+                "type": "string"
+            },
+            "Type": {
+                "id": "/items/properties/Type",
+                "type": {
+                    "enum": [
+                        "String",
+                        "Number"
+                    ]
+                }
+            }
+        },
+        "type": "object"
+    },
+    "type": "array"
+}

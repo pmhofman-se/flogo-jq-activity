@@ -1,0 +1,71 @@
+{
+  "name": "jq",
+  "type": "flogo:activity",
+  "version": "0.0.1",
+  "title": "Transformation JQ",
+  "description": "Transformation JQ",
+  "homepage": "https://github.com/pmhofman-se/flogo-jq-activity/transformation/activity/jq",
+  "author": "Peter Hofman",
+  "ref": "github.com/pmhofman-se/flogo-jq-activity/transformation/activity/jq",
+  "display": {
+    "category": "transformation",
+    "visible": true,
+    "smallIcon": "jq.png",
+    "description": "Transformation JQ"
+  },
+  "settings": [
+    {
+      "name": "Script",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "JSON Query",
+        "description": "The JSON query to evaluate. This query will be applied to the input data and the result will be returned as an array. Arguments start with a dollar sign, e.g. $arg1, and can be configured on the Input Settings tab. The query can be a simple expression or a more complex one, depending on your needs.",
+        "type": "texteditor",
+        "syntax": "plaintext"
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "InputData",
+      "type": "any",
+      "required": true
+    },
+    {
+      "name": "ArgumentNames",
+      "type": "array",
+      "required": false,
+      "display": {
+        "name": "Argument Names",
+        "description": "Set names of arguments to be passed to the script. The names must match the names of the input parameters defined in the script. Specify the names without the '$' prefix. For example, if the script uses $arg1, specify 'arg1' here.",
+        "type": "table",
+        "schema": "{\"$schema\":\"http:\/\/json-schema.org\/draft-04\/schema#\",\"id\":\"http:\/\/example.com\/example.json\",\"items\":{\"id\":\"\/items\",\"properties\":{\"Name\":{\"id\":\"\/items\/properties\/Name\",\"type\":\"string\"},\"Type\":{\"id\":\"\/items\/properties\/Type\",\"type\":{\"enum\":[\"String\",\"Number\"]}}},\"type\":\"object\"},\"type\":\"array\"}",
+        "inputSettingsOnly": true
+      }
+    },
+    {
+      "name": "Arguments",
+      "type": "object",
+      "required": false
+    }
+  ],
+  "output": [
+    {
+      "name": "Error",
+      "type": "boolean",
+      "description": "Flag indicating if there was an error executing the script"
+    },
+    {
+      "name": "ErrorMessage",
+      "type": "string",
+      "description": "The error message"
+    },
+    {
+      "name": "OutputData",
+      "type": "array",
+      "valueType": "any",
+      "required": false
+    }
+  ]
+}
