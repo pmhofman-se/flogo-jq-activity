@@ -1,0 +1,52 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./transformation  # Applies to all `run` steps AFTER checkout
+        
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+        cache: false  # 👈 Disables auto-caching
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: |
+        go test -coverprofile=coverage.out ./...
+        go tool cover -func=coverage.out
+        
+    - name: Generate HTML report
+      run: go tool cover -html=coverage.out -o coverage.html
+     
+    - name: Check minimum coverage  # <-- FAIL LATE (after reports are ready)
+      run: |
+        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+        if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+          echo "❌ Coverage too low: $COVERAGE% (< 80%)"
+          exit 1
+        fi
+
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: identification/coverage.html
