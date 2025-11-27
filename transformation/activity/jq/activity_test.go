@@ -268,7 +268,7 @@ func Test_executeJQ(t *testing.T) {
 	}
 }
 
-func TestExecuteJQWithVariables(t *testing.T) {
+func Test_executeJQ_WithVariables(t *testing.T) {
 	script := ".users[] | select(.age > $minAge) | .name"
 	inputData := map[string]interface{}{
 		"users": []interface{}{

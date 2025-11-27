@@ -37,6 +37,8 @@ func (a *JQActivity) Metadata() *activity.Metadata {
 }
 
 func (a *JQActivity) Eval(context activity.Context) (done bool, err error) {
+	// Initialize coercion manager
+	coercionManager := NewCoercionManager(activityLog)
 
 	script := a.settings.Script
 	if script == "" {
@@ -50,55 +52,31 @@ func (a *JQActivity) Eval(context activity.Context) (done bool, err error) {
 	}
 
 	activityLog.Debugf("Input Argument Names: %v", input.ArgumentNames)
-	inputArgumentNames := input.ArgumentNames
-
 	activityLog.Debugf("Input Arguments: %v", input.Arguments)
-	inputArguments := input.Arguments
-	var coerceErrors []error
-	if inputArgumentNames != nil && inputArguments != nil {
-		argumentFields, _ := coerce.ToObject(inputArguments)
-		if argumentFields != nil {
-			fields := make(map[string]interface{}, len(argumentFields))
-			for _, v := range inputArgumentNames {
-				field, _ := coerce.ToObject(v)
-				activityLog.Debugf("Field: %v", field)
-				if field != nil && field["Name"] != nil && field["Type"] != nil {
-					var fieldVal interface{}
-					if argumentFields[field["Name"].(string)] != nil {
-						switch field["Type"].(string) {
-						case "String":
-							fieldVal, err = coerce.ToString(argumentFields[field["Name"].(string)])
-						case "Number":
-							fieldVal, err = ParseNumber(argumentFields[field["Name"].(string)])
-						default:
-							err = errors.Newf("Unsupported type %v for %v", field["Type"], field["Name"])
-						}
-					}
-					if err != nil {
-						activityLog.Errorf("Coercion failed with error %v for %v (type %v) value %v", err, field["Name"], field["Type"], argumentFields[field["Name"].(string)])
-						coerceErrors = append(coerceErrors, err)
-					}
-					activityLog.Debugf("Fieldval: %v Err: %v", fieldVal, err)
-					fields[field["Name"].(string)] = fieldVal
-				}
-			}
-			inputArguments = fields
-		}
-	}
-	if len(coerceErrors) > 0 {
-		return false, errors.Newf("Unable to coerce input ArgumentNames and Arguments: %v", coerceErrors)
+
+	// Use the coercion manager
+	coercionResult, err := coercionManager.CoerceInputs(input.Arguments, input.ArgumentNames)
+	if err != nil {
+		return false, fmt.Errorf("failed to coerce inputs: %w", err)
 	}
 
-	activityLog.Debugf("Coerced input arguments: %v", inputArguments)
+	if coercionResult.HasErrors() {
+		return false, errors.Newf("Unable to coerce input ArgumentNames and Arguments: %v", coercionResult.Errors)
+	}
 
-	var inputData interface{}
-	inputData, err = coerce.ToAny(input.InputData)
+	if coercionResult.Fields != nil {
+		input.Arguments = coercionResult.Fields
+	}
+
+	activityLog.Debugf("Coerced input arguments: %v", input.Arguments)
+
+	// ... rest of the function remains the same
+	inputData, err := coerce.ToAny(input.InputData)
 	if err != nil {
 		return false, fmt.Errorf("unable to coerce input data to JSON: %w", err)
 	}
 
-	var results []interface{}
-	results, err = executeJQ(script, inputData, inputArguments)
+	results, err := executeJQ(script, inputData, input.Arguments)
 	if err != nil {
 		return false, fmt.Errorf("unable to execute jq script: %w", err)
 	}

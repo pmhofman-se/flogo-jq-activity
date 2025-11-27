@@ -17,27 +17,45 @@ import {
     WiContributionUtils
 } from "wi-studio/app/contrib/wi-contrib";
 
+interface DefaultValues {
+    [key: string]: any;
+}
+
 @WiContrib({})
 @Injectable()
 export class JQActivityContribution extends WiServiceHandlerContribution {
+
+    // Constants for field names
+    private readonly FIELD_NAMES = {
+        ARGUMENTS: 'Arguments',
+        ARGUMENT_NAMES: 'ArgumentNames',
+        SCRIPT: 'Script'
+    } as const;
+
     constructor(@Inject(Injector) injector, private http: Http) {
         super(injector, http);
     }
 
+    private getDefaultValueForType(type: string): any {
+        const defaults: DefaultValues = {
+            String: "abc",
+            Number: 0.1,
+            Boolean: false,
+            Object: {},
+            Array: []
+        };
+        return defaults[type] ?? null;
+    }
+
     value = (fieldName: string, context: IActivityContribution): Observable<any> | any => {
-        if (fieldName === "Arguments") {
-            let argumentNames: IFieldDefinition = context.getField("ArgumentNames");
+        if (fieldName === this.FIELD_NAMES.ARGUMENTS) {
+            const argumentNames: IFieldDefinition = context.getField(this.FIELD_NAMES.ARGUMENT_NAMES);
             if (argumentNames.value) {
-                // Read message attrbutes and construct JSON schema on the fly for the activity input
-                var jsonSchema = {};
-                // Convert string value into JSON object
-                let data = JSON.parse(argumentNames.value);
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].Type === "String") {
-                        jsonSchema[data[i].Name] = "abc";
-                    } else if (data[i].Type === "Number") {
-                        jsonSchema[data[i].Name] = 0.1;
-                    }
+                const jsonSchema: { [key: string]: any } = {};
+                const data = JSON.parse(argumentNames.value);
+
+                for (const item of data) {
+                    jsonSchema[item.Name] = this.getDefaultValueForType(item.Type);
                 }
                 return JSON.stringify(jsonSchema);
             }
@@ -47,21 +65,16 @@ export class JQActivityContribution extends WiServiceHandlerContribution {
     }
 
     validate = (fieldName: string, context: IActivityContribution): Observable<IValidationResult> | IValidationResult => {
-        if (fieldName === "Arguments") {
-            let argumentNames: IFieldDefinition = context.getField("ArgumentNames");
-            let vresult: IValidationResult = ValidationResult.newValidationResult();
-            if (argumentNames.value) {
-                vresult.setVisible(true);
-            } else {
-                vresult.setVisible(false);
-            }
+        if (fieldName === this.FIELD_NAMES.ARGUMENTS) {
+            const argumentNames: IFieldDefinition = context.getField(this.FIELD_NAMES.ARGUMENT_NAMES);
+            const vresult: IValidationResult = ValidationResult.newValidationResult();
+            vresult.setVisible(!!argumentNames.value);
             return vresult;
-
         }
-        if (fieldName === "Script") {
-            let script: IFieldDefinition = context.getField("Script");
-            let vresult: IValidationResult = ValidationResult.newValidationResult();
-            if (script.value!=="") {
+        if (fieldName === this.FIELD_NAMES.SCRIPT) {
+            const script: IFieldDefinition = context.getField(this.FIELD_NAMES.SCRIPT);
+            const vresult: IValidationResult = ValidationResult.newValidationResult();
+            if (script.value !== "") {
                 vresult.setValid(true);
                 vresult.setVisible(true);
             }
