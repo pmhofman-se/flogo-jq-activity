@@ -1,4 +1,4 @@
-module github.com/pmhofman-se/flogo-jq-activity/transformation/activity/jq
+module github.com/pmhofman-se/flogo-jq-activity/transformation
 
 go 1.20
 

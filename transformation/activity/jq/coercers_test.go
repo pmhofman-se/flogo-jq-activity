@@ -1,4 +1,4 @@
-package jq_test
+package jq
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pmhofman-se/flogo-jq-activity/transformation/activity/jq/activity/jq"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,7 +40,7 @@ func Test_StringCoercer_Coerce(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var sc = jq.NewStringCoercer(nil)
+			var sc = NewStringCoercer(nil)
 			got, err := sc.Coerce(tt.input)
 			if tt.wantErr {
 				assert.NotNil(t, err, "Expected error for input: %v", tt.input)
@@ -116,7 +115,7 @@ func Test_NumberCoercer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			nc := jq.NewNumberCoercer(nil)
+			nc := NewNumberCoercer(nil)
 			got, err := nc.Coerce(tt.input)
 			if tt.wantErr {
 				assert.NotNil(t, err, "Expected error for input: %v", tt.input)
@@ -151,11 +150,11 @@ func Test_NewStringCoercer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			coercer := jq.NewStringCoercer(tt.logger)
+			coercer := NewStringCoercer(tt.logger)
 
 			// Basic assertions - just test that constructor works
 			assert.NotNil(t, coercer)
-			assert.IsType(t, &jq.StringCoercer{}, coercer)
+			assert.IsType(t, &StringCoercer{}, coercer)
 		})
 	}
 }
@@ -173,11 +172,11 @@ func Test_NewNumberCoercer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			coercer := jq.NewNumberCoercer(tt.logger)
+			coercer := NewNumberCoercer(tt.logger)
 
 			// Basic assertions - just test that constructor works
 			assert.NotNil(t, coercer)
-			assert.IsType(t, &jq.NumberCoercer{}, coercer)
+			assert.IsType(t, &NumberCoercer{}, coercer)
 		})
 	}
 }
