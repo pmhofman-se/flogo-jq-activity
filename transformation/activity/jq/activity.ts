@@ -50,7 +50,7 @@ export class JQActivityContribution extends WiServiceHandlerContribution {
     value = (fieldName: string, context: IActivityContribution): Observable<any> | any => {
         if (fieldName === this.FIELD_NAMES.ARGUMENTS) {
             const argumentNames: IFieldDefinition = context.getField(this.FIELD_NAMES.ARGUMENT_NAMES);
-            if (argumentNames.value) {
+            if (!!argumentNames.value && argumentNames.value.length > 0) {
                 const jsonSchema: { [key: string]: any } = {};
                 const data = JSON.parse(argumentNames.value);
 
@@ -68,16 +68,16 @@ export class JQActivityContribution extends WiServiceHandlerContribution {
         if (fieldName === this.FIELD_NAMES.ARGUMENTS) {
             const argumentNames: IFieldDefinition = context.getField(this.FIELD_NAMES.ARGUMENT_NAMES);
             const vresult: IValidationResult = ValidationResult.newValidationResult();
-            vresult.setVisible(!!argumentNames.value);
+            vresult.setVisible(!!argumentNames.value && argumentNames.value.length > 0);
             return vresult;
         }
         if (fieldName === this.FIELD_NAMES.SCRIPT) {
             const script: IFieldDefinition = context.getField(this.FIELD_NAMES.SCRIPT);
             const vresult: IValidationResult = ValidationResult.newValidationResult();
-            if (script.value !== "") {
+            if (!!script.value && script.value !== "") {
                 vresult.setValid(true);
-                vresult.setVisible(true);
             }
+            vresult.setVisible(true);
             return vresult;
         }
     }
